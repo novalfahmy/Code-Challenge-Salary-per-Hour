@@ -2,19 +2,23 @@
 
 
 ## Project Overview
-This repository contains a set of SQL and Python scripts to calculate the salary per hour for each branch based on the number of employees and their total working hours each month. The results of this project will help the analyst determine the cost-effectiveness of the current payroll scheme, specifically on a per-hour basis for each branch. The input data is from the employees.csv and timesheets.csv. employees.csv consists of all-time employee information and timesheets.csv consists of daily clock-ins and clock-outs of the employees. Then, those files will be transformed and the output data will be stored in a table for easy retrieval by a BI tool using a simple SQL query.
+This repository contains a set of SQL and Python scripts to calculate the salary per hour for each branch based on the number of employees and their total working hours each month. The results of this project will help the analyst determine the cost-effectiveness of the current payroll scheme, specifically on a per-hour basis for each branch. The input data is from 
+- employees.csv: consists of all-time employee information and
+- timesheets.csv: consists of daily clock-ins and clock-outs of the employees.
+
+Both files will be transformed and the output data will be stored in a table for easy retrieval by a BI tool using a simple SQL query.
 
 
 
 ## Data Flow Overview
 Because the script is supposed to be in full-snapshot mode, the SQL and Python scripts will be
 - SQL Script: Truncate Destination Table --> Transform Raw Data --> Insert Into Destination Table
-- Python Script: Read CSV Data --> Transform Raw Data --> Truncate Destination Table --> Insert Into Destination Table
+- Python Script: Read CSV Data --> Transform Raw Data --> Connect to Database --> Truncate Destination Table --> Insert Into Destination Table
 
 
 
 ## Getting Started
-Before running the project, make sure that you have installed the required Python packages and configured the config_db.py file with your database parameters. Then, you can set up the required schemas and tables in PostgreSQL and finally copy the raw data to staging.employees and staging.timesheets tables using psql CLI
+Before running this script, make sure that you have met the prerequisites and have downloaded this repository
 
 
 **Prerequisites**
@@ -31,10 +35,8 @@ git clone https://github.com/novalfahmy/Code-Challenge-Salary-per-Hour
 ## SQL Preparation
 
 **Set up required schemas and tables in PostgreSQL**
-- **Schema**: 
-There are 2 schemas, staging and analytics. The staging schema is for storing the raw data (employees and timesheets), meanwhile the analytics schema is the output schema for BI queries
-- **Table**:
-There are 3 tables, employees and timesheets tables in staging schema for storing raw employees and timesheets data and salary_per_hour table in analytics schema for storing transformed data ready to be queried by BI tools. 
+- **Schema**: there are 2 schemas, staging and analytics. The staging schema is for storing the raw data (employees and timesheets), meanwhile the analytics schema is the output schema for BI queries
+- **Table**: there are 3 tables, employees and timesheets tables in staging schema for storing raw employees and timesheets data and salary_per_hour table in analytics schema for storing transformed data ready to be queried by BI tools. 
 
 ```sql
 -- Scehma
@@ -74,13 +76,13 @@ create table if not exists analytics.salary_per_hour (
 
 1. Activate your psql
 ```bash
-/{psql-directory}/psql -U your-username -d your-database -h your-host -p your-port
+/{psql-path}/psql -U your-username -d your-database -h your-host -p your-port
 ```
 
 2. Configure your CSV data directory and copy the data
 ```bash
-\copy staging.employees(employe_id, branch_id, salary, join_date, resign_date) from '{Directory}\employees.csv' with delimiter ',' csv header;
-\copy staging.timesheets(timesheet_id, employee_id, date, checkin, checkout) from '{Directory}\timesheets.csv' with delimiter ',' csv header;
+\copy staging.employees(employe_id, branch_id, salary, join_date, resign_date) from '{path}\employees.csv' with delimiter ',' csv header;
+\copy staging.timesheets(timesheet_id, employee_id, date, checkin, checkout) from '{path}\timesheets.csv' with delimiter ',' csv header;
 ```
 
 
@@ -128,7 +130,7 @@ table_name = '{your-destination-table}'
 
 
 ## Usage
-To run this script you can execute the salary_per_hour.py (Python) or salary_per_hour.sql (SQL)
+To run this script you can execute the `salary_per_hour.py` (Python) or `salary_per_hour.sql` (SQL)
 
 
 
@@ -271,16 +273,16 @@ insert into analytics.salary_per_hour (
 
 
 ## Python Script Logic  
-The logic in the Python script is the same as the SQL script logic. There are 4 scripts to run this transformation
-- config_db.py
-- connect_db.py
-- transform_csv.py 
-- salary_per_hour.py
+The logic in the Python script is the same as the SQL script logic. There are 4 scripts needed to run this ETL.
+- `config_db.py`: this module stores database connection parameters.
+- `connect_db.py`: this module connects to the database and loads the transformed data into the destination table.
+- `transform_csv.py`: this module handles the transformation of raw data, applying various data cleaning and formatting operations.
+- `salary_per_hour.py`: this is the main module that orchestrates the ETL process, importing `config_db.py`, `connect_db.py`, and `transform_csv.py` to execute the workflow.
 
 
 ### `config_db.py`
 
-This Python script is to set the database configuration, destination schema, and destination table. You can change the {xxx} with your database parameters, schema, and table name. 
+This Python script is to set the database configuration, destination schema, and destination table. You can change the {your-xxx} with your database parameters, schema, and table name. 
 
 ```python 
 db_params = {
@@ -447,7 +449,8 @@ If the script is successful, It will print the successful attempts. If the scrip
 
 ### `salary_per_hour.py`
 
-This Python script consists of a function to set the CSV, run the cleansing & merging function, and load the transformed data to the desired destination table. 
+This Python script consists of a function to import and execute all modules (`config_db.py`, `connect_db.py`, `transform_csv.py`) to execute the workflow.
+. 
 This function does 4 works
 
 **1. Set the CSV path**
@@ -489,3 +492,4 @@ This function does 4 works
         else:
             raise ValueError("Data can't be loaded to destination table due to invalid input")
 ```
+If the script is successful, It will print the successful attempts. If the script is failed, It will print the error.
