@@ -1,7 +1,7 @@
 db_params = {
     'database': '{your-database}',
     'user': '{your-user}',
-    'password': '{your-password}!',
+    'password': '{your-password}',
     'host': '{your-host}',
     'port': {your-port}
 }
