@@ -445,7 +445,7 @@ This function is to merge the final timesheets data and the final employees data
 If the script is successful, It will print the successful attempts. If the script is failed, It will print the error of each function.
 
 
-### `4. salary_per_hour.py`
+### `salary_per_hour.py`
 
 This Python script consists of a function to set the CSV, run the cleansing & merging function, and load the transformed data to the desired destination table. 
 This function does 4 works
