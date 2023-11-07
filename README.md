@@ -11,9 +11,11 @@ Both files will be transformed and the output data will be stored in a table for
 
 
 ## Data Flow Overview
-Because the script is supposed to be in full-snapshot mode, the SQL and Python scripts will be
+Because the script is supposed to read the whole table and then overwrite the result in the destination table, then the SQL script will be
 - SQL Script: Truncate Destination Table --> Transform Raw Data --> Insert Into Destination Table
-- Python Script: Read CSV Data --> Transform Raw Data --> Connect to Database --> Truncate Destination Table --> Insert Into Destination Table
+
+Because the script is supposed to read the new data and then appends the result to the destination table, then the Python script will be
+- Python Script: Read CSV Data --> Transform Raw Data --> Connect to Database --> Check The New Data in Destination Table --> Update or Append New Data 
 
 
 
@@ -119,7 +121,7 @@ tzdata==2023.3
 db_params = {
     'database': '{your-database}',
     'user': '{your-user}',
-    'password': '{your-password}!',
+    'password': '{your-password}',
     'host': '{your-host}',
     'port': {your-port}
 }
@@ -273,7 +275,15 @@ insert into analytics.salary_per_hour (
 
 
 ## Python Script Logic  
-The logic in the Python script is the same as the SQL script logic. There are 4 scripts needed to run this ETL.
+- Python Script: Read CSV Data --> Transform Raw Data --> Connect to Database --> Check The New Data in Destination Table --> Update or Append New Data 
+**Flow**
+1. Read CSV Data 
+2. Transform Raw Data 
+3. Connect to Database 
+4. Check The Transformed Data in The Destination Table 
+5. Update If The Transformed Data Exists or Append The Transformed Data If It Doesn't Exist
+
+There are 4 scripts needed to run this ETL.
 - `config_db.py`: this module stores database connection parameters.
 - `connect_db.py`: this module connects to the database and loads the transformed data into the destination table.
 - `transform_csv.py`: this module handles the transformation of raw data, applying various data cleaning and formatting operations.
@@ -299,8 +309,7 @@ table_name = '{your-destination-table}'
 
 ### `connect_db.py`
 
-This Python script consists of a function to connect to the database and execute SQL commands (create table if not exist, truncate table, and load data). 
-The function in this script does 4 works
+This Python script consists of a function to connect to the database and execute SQL commands. The function in this script does 4 works
 
 **1. Connect to the database and create SQLAlchemy engine**
 ```python 
@@ -324,18 +333,27 @@ The function in this script does 4 works
         print(f'Table {schema_name}.{table_name} has been created or already exists.')
 ```
 
-**3. Truncate destination table**
+**3. Loop through the transformed data and check if there's an existing record with the same year, month, and branch_id**
 ```python 
-        truncate_sql = f'TRUNCATE TABLE {schema_name}.{table_name}'
-        cursor.execute(truncate_sql)
-        connection.commit()
-        print(f'Data in {schema_name}.{table_name} has been truncated.')
-```
+        for index, row in data.iterrows():
+            year, month, branch_id = row['year'], row['month'], row['branch_id']
 
-**4. Load data to the destination table**
+            existing_record_sql = f'SELECT * FROM {schema_name}.{table_name} WHERE year = {year} AND month = {month} AND branch_id = {branch_id}'
+            cursor.execute(existing_record_sql)
+            existing_record = cursor.fetchone()
+``` 
+
+**4. Update or append the transformed data to destination table**
 ```python 
-        data.to_sql(table_name, schema=schema_name, if_exists='replace', index=False, con=engine)
-        print(f'Data has been loaded into {schema_name}.{table_name}.')
+           if existing_record:
+                # Update the existing data
+                update_sql = f'UPDATE {schema_name}.{table_name} SET salary_per_hour = {row["salary_per_hour"]} WHERE year = {year} AND month = {month} AND branch_id = {branch_id}'
+                cursor.execute(update_sql)
+                connection.commit()
+            else:
+                # Insert a new data
+                new_data = row.to_frame().transpose()
+                new_data.to_sql(table_name, schema=schema_name, if_exists='append', index=False, con=engine)
 ```
 
 If the script is successful, It will print the successful attempts. If the script is failed, It will print the error. After all, the cursor and the connection will be closed.
@@ -343,10 +361,11 @@ If the script is successful, It will print the successful attempts. If the scrip
 
 ### `transform_csv.py`
 
-This Python script consists of 3 functions to cleanse timesheets data, cleanse employees data, and merge those data. 
+The _transformation_ logic in the Python script is the same as the transformation logic in the SQL script. This Python script consists of 3 functions to cleanse timesheets data, cleanse employees data, and merge those data. 
 - clean_timesheets(timesheets_data)
 - clean_employees(employees_data)
 - merge_data(timesheets_data, employees_data)
+
 
 
 **A. Function: clean_timesheets(timesheets_data)**
