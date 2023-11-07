@@ -11,13 +11,13 @@ Both files will be transformed and the output data will be stored in a table for
 
 
 ## Data Flow Overview
-Because the script is supposed to read the whole table and then overwrite the result in the destination table, the SQL script will be
+Because the SQL script is supposed to read the whole table and then overwrite the result in the destination table, the SQL script will be
 
 **SQL Script:**
 ```plaintext
 Truncate Destination Table --> Transform Raw Data --> Insert Into Destination Table
 ```
-Because the script is supposed to read the new data and then append the result to the destination table, the Python script will be
+Because the Python script is supposed to read the new data and then append the result to the destination table, the Python script will be
 
 **Python Script:** 
 ```
