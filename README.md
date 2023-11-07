@@ -3,7 +3,7 @@
 
 ## Project Overview
 This repository contains a set of SQL and Python scripts to calculate the salary per hour for each branch based on the number of employees and their total working hours each month. The results of this project will help the analyst determine the cost-effectiveness of the current payroll scheme, specifically on a per-hour basis for each branch. The input data is from 
-- employees.csv: consists of all-time employee information and
+- employees.csv: consists of all-time employee information
 - timesheets.csv: consists of daily clock-ins and clock-outs of the employees.
 
 Both files will be transformed and the output data will be stored in a table for easy retrieval by a BI tool using a simple SQL query.
@@ -277,7 +277,7 @@ The logic in the Python script is the same as the SQL script logic. There are 4 
 - `config_db.py`: this module stores database connection parameters.
 - `connect_db.py`: this module connects to the database and loads the transformed data into the destination table.
 - `transform_csv.py`: this module handles the transformation of raw data, applying various data cleaning and formatting operations.
-- `salary_per_hour.py`: this is the main module that orchestrates the ETL process, importing `config_db.py`, `connect_db.py`, and `transform_csv.py` to execute the workflow.
+- `salary_per_hour.py`: this is the main module that orchestrates the ETL process, importing _config_db.py_, _connect_db.py_, and _transform_csv.py_ to execute the workflow.
 
 
 ### `config_db.py`
@@ -309,9 +309,8 @@ The function in this script does 4 works
         engine = create_engine(f'postgresql+psycopg2://{db_params["user"]}:{db_params["password"]}@{db_params["host"]}:{db_params["port"]}/{db_params["database"]}')
 ```
 
-**2. Create a table if not exist** 
+**2. Create a table if it does not exist** 
 ```python 
-       # Create the table if it doesn't exist
         create_table_sql = f"""
         CREATE TABLE IF NOT EXISTS {schema_name}.{table_name} (
             year numeric,
@@ -350,7 +349,7 @@ This Python script consists of 3 functions to cleanse timesheets data, cleanse e
 - merge_data(timesheets_data, employees_data)
 
 
-**A. clean_timesheets(timesheets_data) function**
+**A. Function: clean_timesheets(timesheets_data)**
    
 This function is to cleanse the timesheets data. This function does 5 works
 
@@ -360,7 +359,7 @@ This function is to cleanse the timesheets data. This function does 5 works
         timesheets_data['checkout'] = pd.to_datetime(timesheets_data['checkout'], format='%H:%M:%S', errors='coerce')
 ```
 
-**2. Create new column of absence_year and absence_month**
+**2. Create a new column of absence_year and absence_month**
 ```python 
         timesheets_data['absence_year'] = pd.to_datetime(timesheets_data['date']).dt.year
         timesheets_data['absence_month'] = pd.to_datetime(timesheets_data['date']).dt.month
@@ -388,7 +387,7 @@ This function is to cleanse the timesheets data. This function does 5 works
 ```
 
 
-**B. clean_employees(employees_data) function**
+**B. Function: clean_employees(employees_data)**
    
 This function is to cleanse the employees data. This function does 3 works
 
@@ -415,7 +414,7 @@ This function is to cleanse the employees data. This function does 3 works
 ```
 
 
-**C. merge_data(timesheets_data, employees_data) function**
+**C. Function: merge_data(timesheets_data, employees_data)**
    
 This function is to merge the final timesheets data and the final employees data. This function does 4 works
 
@@ -449,7 +448,7 @@ If the script is successful, It will print the successful attempts. If the scrip
 
 ### `salary_per_hour.py`
 
-This Python script consists of a function to import and execute all modules (`config_db.py`, `connect_db.py`, `transform_csv.py`) to execute the workflow.
+This Python script consists of a function to import and execute all modules (_config_db.py_, _connect_db.py_, _transform_csv.py_) to execute the workflow.
 . 
 This function does 4 works
 
@@ -461,14 +460,14 @@ This function does 4 works
 
 **2. Read the timesheets and employees CSV and execute the cleansing function if the data is not empty**
 ```python 
-        # Read the timesheets CSV and execute the cleanse_timesheets function if the data is not empty
+        # Timesheets
         timesheets_data = pd.read_csv(timesheets_csv_path)
         if not timesheets_data.empty:
             timesheets_data = clean_timesheets(timesheets_data)
         else:
             raise ValueError("Timesheets data is empty or invalid.")
 
-        # Read the employees CSV and execute the cleanse_employees function if the data is not empty
+        # Employees
         employees_data = pd.read_csv(employees_csv_path)
         if not employees_data.empty:
             employees_data = clean_employees(employees_data)
@@ -484,7 +483,7 @@ This function does 4 works
             raise ValueError("Data merging failed due to invalid input.")
 ```
 
-**4. Load the merged data to the destination table if the merged data is not empty**
+**4. Load the merged data to the destination table if it is not empty**
 ```python 
         if final_data is not None:
             load_func = load_data(final_data, db_params, schema_name, table_name)
