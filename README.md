@@ -517,3 +517,10 @@ This function does 4 works
             raise ValueError("Data can't be loaded to destination table due to invalid input")
 ```
 If the script is successful, It will print the successful attempts. If the script is failed, It will print the error.
+
+
+
+## Project Limitations 
+There are limitations in this project
+- This script doesn't include the scheduler function
+- The database used is a public database, so it has no function to configure SSH tunnel 
