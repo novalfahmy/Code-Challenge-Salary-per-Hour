@@ -11,12 +11,18 @@ Both files will be transformed and the output data will be stored in a table for
 
 
 ## Data Flow Overview
-Because the script is supposed to read the whole table and then overwrite the result in the destination table, then the SQL script will be
-- SQL Script: Truncate Destination Table --> Transform Raw Data --> Insert Into Destination Table
+Because the script is supposed to read the whole table and then overwrite the result in the destination table, the SQL script will be
 
-Because the script is supposed to read the new data and then appends the result to the destination table, then the Python script will be
-- Python Script: Read CSV Data --> Transform Raw Data --> Connect to Database --> Check The New Data in Destination Table --> Update or Append New Data 
+**SQL Script:**
+```plaintext
+Truncate Destination Table --> Transform Raw Data --> Insert Into Destination Table
+```
+Because the script is supposed to read the new data and then append the result to the destination table, the Python script will be
 
+**Python Script:** 
+```
+Read CSV Data --> Transform Raw Data --> Connect to Database --> Check The New Data in Destination Table --> Update or Append New Data 
+```
 
 
 ## Getting Started
@@ -275,7 +281,7 @@ insert into analytics.salary_per_hour (
 
 
 ## Python Script Logic  
-- Python Script: Read CSV Data --> Transform Raw Data --> Connect to Database --> Check The New Data in Destination Table --> Update or Append New Data 
+
 **Flow**
 1. Read CSV Data 
 2. Transform Raw Data 
@@ -467,7 +473,7 @@ If the script is successful, It will print the successful attempts. If the scrip
 
 ### `salary_per_hour.py`
 
-This Python script consists of a function to import and execute all modules (_config_db.py_, _connect_db.py_, _transform_csv.py_) to execute the workflow.
+This Python script consists of a function to import and execute all modules (_config_db.py_, _connect_db.py_, _transform_csv.py_).
 . 
 This function does 4 works
 
