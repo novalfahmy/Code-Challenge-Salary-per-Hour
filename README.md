@@ -244,7 +244,7 @@ This is the final output of the transformed data that consists of year, month, b
 
 Notes:
 The reason I exclude the working hours of the employees in their first and last month of work is because
-- It can make the salarey_per_hour more biased since the output is per month. For instance, the salary_per_hour will be less accurate if there is an employee who just joined on the late dates of the month (example: 2021-03-29) and resigned on the early dates of the month (example: 2022-08-02)
+- It can make the salary_per_hour more biased since the output is per month. For instance, the salary_per_hour will be less accurate if there is an employee who just joined on the late dates of the month (example: 2021-03-29) and resigned on the early dates of the month (example: 2022-08-02)
 
 ```sql
 select 
